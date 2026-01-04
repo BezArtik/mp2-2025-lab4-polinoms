@@ -1,2 +1,301 @@
 #include <gtest.h>
 #include "SortedList.h"
+#include <vector>
+
+TEST(SortedList, can_create_empty) {
+    ASSERT_NO_THROW(SortedList<int> list);
+}
+
+TEST(SortedList, can_create_with_init_list) {
+    ASSERT_NO_THROW(SortedList<int> list({ 1,5,4,42,8 }));
+}
+
+TEST(SortedList, can_create_with_comparator) {
+    SortedList<int, std::greater<int>> list;
+    ASSERT_NO_THROW(list);
+}
+
+TEST(SortedList, can_create_copy) {
+    SortedList<int> list;
+    ASSERT_NO_THROW(SortedList<int> list1(list));
+}
+
+TEST(SortedList, can_create_move_copy) {
+    SortedList<int> list;
+    ASSERT_NO_THROW(SortedList<int> list1(std::move(list)));
+}
+
+
+TEST(SortedList, empty_is_empty) {
+    SortedList<int> list;
+    EXPECT_TRUE(list.is_empty());
+}
+
+TEST(SortedList, empty_has_zero_size) {
+    SortedList<int> list;
+    EXPECT_EQ(list.size(), 0);
+}
+
+
+TEST(SortedList, with_elements_is_not_empty) {
+    SortedList<int> list = { 1,5,6,3,4 };
+    EXPECT_FALSE(list.is_empty());
+}
+
+TEST(SortedList, with_elements_has_size) {
+    SortedList<int> list = { 1,2,3,4 };
+    EXPECT_EQ(list.size(), 4);
+}
+
+TEST(SortedList, single_element_list) {
+    SortedList<int> list = { 42 };
+    EXPECT_FALSE(list.is_empty());
+    EXPECT_EQ(list.size(), 1);
+    EXPECT_EQ(list.front(), 42);
+    EXPECT_EQ(list.back(), 42);
+}
+
+
+TEST(SortedList, front_is_correct) {
+    SortedList<int> list = { 1,2,3,4 };
+    EXPECT_EQ(list.front(), 1);
+}
+
+TEST(SortedList, back_is_correct) {
+    SortedList<int> list = { 1,2,3,4 };
+    EXPECT_EQ(list.back(), 4);
+}
+
+TEST(SortedList, can_insert_elements) {
+    SortedList<int> list;
+    ASSERT_NO_THROW(list.insert(1));
+}
+
+TEST(SortedList, insert_duplicate_values) {
+    SortedList<int> list = { 1, 2, 2, 2, 3 };
+    auto it = list.begin();
+    EXPECT_EQ(*it++, 1);
+    EXPECT_EQ(*it++, 2);
+    EXPECT_EQ(*it++, 2);
+    EXPECT_EQ(*it++, 2);
+    EXPECT_EQ(*it++, 3);
+}
+
+TEST(SortedList, insert_same_value_multiple_times) {
+    SortedList<int> list;
+    list.insert(5);
+    list.insert(5);
+    list.insert(5);
+    EXPECT_EQ(list.size(), 3);
+}
+
+TEST(SortedList, can_insert_by_iterators) {
+    std::vector<int> vec = { 1,2,3,4,5,6,7 };
+    auto it = vec.begin();
+    ++it;
+    ++it;
+    SortedList<int> list;
+    list.insert(it, vec.end());
+    for (auto it1 = list.begin(); it1 != list.end(); ++it1) {
+        EXPECT_EQ(*it, *it1);
+        ++it;
+    }
+}
+
+TEST(SortedList, can_erase_elements) {
+    SortedList<int> list = { 1,2,3,4,5,6 };
+    auto it = list.begin();
+    list.erase(it);
+    int i = 1;
+    for (it = list.begin(); it != list.end(); ++it) {
+        EXPECT_EQ(*it, i + 1);
+        ++i;
+    }
+}
+
+TEST(SortedList, erase_from_empty_list) {
+    SortedList<int> list;
+    EXPECT_NO_THROW(list.erase(list.begin()));
+}
+
+TEST(SortedList, erase_all_elements) {
+    SortedList<int> list = { 1, 2, 3 };
+    auto it = list.begin();
+    while (it != list.end()) {
+        it = list.erase(it);
+    }
+    EXPECT_TRUE(list.is_empty());
+    EXPECT_EQ(list.size(), 0);
+}
+
+TEST(SortedList, erase_last_element) {
+    SortedList<int> list = { 1, 2, 3 };
+    auto it = --list.end();
+    list.erase(it);
+    EXPECT_EQ(list.back(), 2);
+    EXPECT_EQ(list.size(), 2);
+}
+
+TEST(SortedList, can_clear) {
+    SortedList<int> list = { 1,2,3,4,5 };
+    ASSERT_NO_THROW(list.clear());
+}
+
+TEST(SortedList, cleared_is_empty) {
+    SortedList<int> list = { 1,2,3,4,5 };
+    list.clear();
+    EXPECT_TRUE(list.is_empty());
+}
+
+TEST(SortedList, cleared_is_zero_size) {
+    SortedList<int> list = { 1,2,3,4,5 };
+    list.clear();
+    EXPECT_EQ(list.size(), 0);
+}
+
+TEST(SortedList, find_existing_element) {
+    SortedList<int> list = { 1, 2, 3, 4, 5 };
+    auto it = list.find(3);
+    ASSERT_NE(it, list.end());
+    EXPECT_EQ(*it, 3);
+}
+
+TEST(SortedList, find_non_existing_element) {
+    SortedList<int> list = { 1, 2, 3, 4, 5 };
+    auto it = list.find(42);
+    EXPECT_EQ(it, list.end());
+}
+
+TEST(SortedList, find_in_empty_list) {
+    SortedList<int> list;
+    auto it = list.find(1);
+    EXPECT_EQ(it, list.end());
+}
+
+TEST(SortedList, can_work_with_iterators) {
+    SortedList<int> list;
+    for (size_t i = 0; i < 10; ++i) {
+        list.insert(i + 1);
+    }
+    int i = 0;
+    for (auto it = list.begin(); it != list.end(); ++it) {
+        EXPECT_EQ(*it, i + 1);
+        ++i;
+    }
+}
+
+TEST(SortedList, iterator_invalidation) {
+    SortedList<int> list = { 1, 2, 3, 4, 5 };
+    auto it = list.begin();
+    ++it;
+    list.erase(list.begin());
+    EXPECT_EQ(*it, 2);
+}
+
+TEST(SortedList, end_iterator_operations) {
+    SortedList<int> list = { 1, 2, 3 };
+    auto it = list.end();
+    --it;
+    EXPECT_EQ(*it, 3);
+}
+
+TEST(SortedList, const_iterators) {
+    const SortedList<int> list = { 1, 2, 3, 4 };
+    int sum = 0;
+    for (auto it = list.cbegin(); it != list.cend(); ++it) {
+        sum += *it;
+    }
+    EXPECT_EQ(sum, 10);
+}
+
+TEST(SortedList, elements_are_sorted_automatically) {
+    SortedList<int> list = { 6,3,2,5,4,1 };
+    int i = 0;
+    for (auto it = list.begin(); it != list.end(); ++it) {
+        EXPECT_EQ(*it, i + 1);
+        ++i;
+    }
+}
+
+TEST(SortedList, elements_are_sorted_with_other_comparator) {
+    SortedList<int, std::greater<int>> list = { 6,3,2,5,4,1 };
+    int i = 0;
+    for (auto it = --list.end(); it != list.begin(); --it) {
+        EXPECT_EQ(*it, i + 1);
+        ++i;
+    }
+}
+
+TEST(SortedList, copy_and_original_are_equal) {
+    SortedList<int> list = { 1,2,3,4,5 };
+    SortedList<int> list1(list);
+    auto it1 = list.begin();
+    auto it2 = list1.begin();
+    while (it1 != list.end() && it2 != list1.end()) {
+        EXPECT_EQ(*it1, *it2);
+        ++it1;
+        ++it2;
+    }
+}
+
+TEST(SortedList, can_assign) {
+    SortedList<int> list, list1;
+    ASSERT_NO_THROW(list = list1);
+}
+
+TEST(SortedList, assigned_and_original_are_equal) {
+    SortedList<int> list = { 1,2,3,4,5 }, list1;
+    list1 = list;
+    auto it1 = list.begin();
+    auto it2 = list1.begin();
+    while (it1 != list.end() && it2 != list1.end()) {
+        EXPECT_EQ(*it1, *it2);
+        ++it1;
+        ++it2;
+    }
+}
+
+TEST(SortedList, move_constructor) {
+    SortedList<int> list1 = { 1, 2, 3, 4, 5 };
+    SortedList<int> list2(std::move(list1));
+
+    EXPECT_TRUE(list1.is_empty());
+    EXPECT_EQ(list2.size(), 5);
+
+    int i = 1;
+    for (auto val : list2) {
+        EXPECT_EQ(val, i++);
+    }
+}
+
+TEST(SortedList, can_move_assign) {
+    SortedList<int> list;
+    ASSERT_NO_THROW(SortedList<int> list2 = std::move(list));
+}
+
+TEST(SortedList, move_assignment) {
+    SortedList<int> list1 = { 1, 2, 3 };
+    SortedList<int> list2 = { 4, 5, 6 };
+
+    list2 = std::move(list1);
+
+    EXPECT_TRUE(list1.is_empty());
+    EXPECT_EQ(list2.size(), 3);
+}
+
+TEST(SortedList, large_number_of_elements) {
+    SortedList<int> list;
+    const int N = 100'000;
+
+    for (int i = N; i > 0; --i) {
+        list.insert(i);
+    }
+
+    EXPECT_EQ(list.size(), N);
+
+    int i = 1;
+    for (const auto& x : list) {
+        EXPECT_EQ(x, i);
+        ++i;
+    }
+}

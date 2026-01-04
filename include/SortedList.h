@@ -60,12 +60,12 @@ public:
         bool operator!=(const ConstIterator& other) const noexcept;
     };
 
-    SortedList(const Compare& comp = Compare());
+    SortedList(); 
 
     template <typename Iter>
-    SortedList(Iter first, Iter last, const Compare& comp = Compare());
+    SortedList(Iter first, Iter last);
 
-    SortedList(std::initializer_list<T> init, const Compare& comp = Compare());
+    SortedList(std::initializer_list<T> init);
     SortedList(const SortedList& other);
     SortedList& operator=(const SortedList& other);
     SortedList(SortedList&& other) noexcept;
@@ -259,25 +259,26 @@ bool SortedList<T, Compare>::ConstIterator::operator!=(const ConstIterator& othe
 // ----------------------------------------------------------------------------
 
 template <typename T, typename Compare>
-SortedList<T, Compare>::SortedList(const Compare& comp)
-    : sentinel_(), size_(0), comp_(comp) {
+SortedList<T, Compare>::SortedList()
+    : sentinel_(), size_(0), comp_() {
+    sentinel_.next_ = sentinel_.prev_ = &sentinel_;
 }
 
 template <typename T, typename Compare>
 template <typename Iter>
-SortedList<T, Compare>::SortedList(Iter first, Iter last, const Compare& comp)
-    : SortedList(comp) {
+SortedList<T, Compare>::SortedList(Iter first, Iter last)
+    : SortedList() {
     insert(first, last);
 }
 
 template <typename T, typename Compare>
-SortedList<T, Compare>::SortedList(std::initializer_list<T> init, const Compare& comp)
-    : SortedList(init.begin(), init.end(), comp) {
+SortedList<T, Compare>::SortedList(std::initializer_list<T> init)
+    : SortedList(init.begin(), init.end()) {
 }
 
 template <typename T, typename Compare>
 SortedList<T, Compare>::SortedList(const SortedList& other)
-    : SortedList(other.comp_) {
+    : SortedList() {
     for (const auto& item : other) {
         insert(item);
     }

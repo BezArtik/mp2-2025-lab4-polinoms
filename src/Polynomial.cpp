@@ -48,7 +48,7 @@ Polynomial::Monom::Monom(const std::string& str) : coefficient_(0.0) {
 	std::stringstream ss(str);
 	ss >> coefficient_;
 	if (ss.fail()) {
-		throw std::invalid_argument("Invalid input: " + str);
+		throw std::invalid_argument("Invalid input");
 	}
 
 	char c;
@@ -60,7 +60,7 @@ Polynomial::Monom::Monom(const std::string& str) : coefficient_(0.0) {
 			if (ss.peek() == '^') {
 				ss.get();
 				if (!(ss >> power)) {  
-					throw std::invalid_argument("Invalid input: " + str);
+					throw std::invalid_argument("Invalid input");
 				}
 			}
 			variables_.insert({ var, power });

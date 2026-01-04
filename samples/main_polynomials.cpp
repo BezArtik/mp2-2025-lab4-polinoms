@@ -1,7 +1,6 @@
 #include "SortedList.h"
 #include "Polynomial.h"
 #include <iostream>
-#include <chrono>
 #include <string>
 
 double calculate_interactive(const Polynomial& poly) {
@@ -34,17 +33,6 @@ void input_and_calculate() {
 
 
 int main() {
-	//while (true) {
-	//	const auto start{ std::chrono::steady_clock::now() };
-	//	Polynomial p;
-	//	for (int i = 0; i < 500; ++i) {
-	//		p += Polynomial::Monom{ 1.0, {{'x',i},{'y',i + 1},{'z',i+2}}};
-	//	}
-	//	const auto finish{ std::chrono::steady_clock::now() };
-	//	const std::chrono::duration<double> elapsed_seconds{ finish - start };
-	//	std::cout << elapsed_seconds.count() << "s\n";
-	//}
-
     try {
         input_and_calculate();
     }
