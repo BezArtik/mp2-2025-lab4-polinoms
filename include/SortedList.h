@@ -82,6 +82,7 @@ public:
     const T& back() const;
 
     Iterator insert(const T& data);
+    Iterator insert_unique(const T& data);
 
     template <typename Iter>
     void insert(Iter first, Iter last);
@@ -411,6 +412,29 @@ SortedList<T, Compare>::insert(const T& data) {
         curr = curr->next_;
     }
 
+    p->next_ = curr;
+    p->prev_ = curr->prev_;
+    curr->prev_->next_ = p;
+    curr->prev_ = p;
+
+    ++size_;
+    return Iterator(p);
+}
+
+template <typename T, typename Compare>
+typename SortedList<T,Compare>::Iterator
+SortedList<T, Compare>::insert_unique(const T& data) {
+    if (is_empty()) {
+        insert(data);
+    }
+    Node* p = new Node(data);
+    Node* curr = sentinel_.next_;
+    while (curr != &sentinel_ && comp_(curr->data_, data)) {
+        curr = curr->next_;
+    }
+    if (curr != &sentinel_ && !comp_(data, curr->data_) && !comp_(curr->data_, data)) {
+        return Iterator(curr);
+    }
     p->next_ = curr;
     p->prev_ = curr->prev_;
     curr->prev_->next_ = p;

@@ -89,6 +89,21 @@ TEST(SortedList, insert_same_value_multiple_times) {
     EXPECT_EQ(list.size(), 3);
 }
 
+TEST(SortedList, insert_unique_does_not_save_duplicates) {
+    SortedList<int> list;
+    list.insert_unique(1);
+    list.insert_unique(2);
+    list.insert_unique(2);
+    list.insert_unique(2);
+    list.insert_unique(3);
+    list.insert_unique(4);
+    int i = 0;
+    for (const auto& x : list) {
+        EXPECT_EQ(x, i + 1);
+        ++i;
+    }
+}
+
 TEST(SortedList, can_insert_by_iterators) {
     std::vector<int> vec = { 1,2,3,4,5,6,7 };
     auto it = vec.begin();

@@ -45,26 +45,82 @@ Polynomial::Monom::Monom(double coeff, std::initializer_list<Variable> vars)
 }
 
 Polynomial::Monom::Monom(const std::string& str) : coefficient_(0.0) {
-	std::stringstream ss(str);
-	ss >> coefficient_;
-	if (ss.fail()) {
-		throw std::invalid_argument("Invalid input");
+	if (str.empty()) {
+		throw std::invalid_argument("Empty string");
+	}
+	std::string s = str;
+	s.erase(std::remove(s.begin(), s.end(), ' '), s.end());
+
+	size_t i = 0;
+
+	bool has_explicit_coefficient = false;
+	bool negative = false;
+
+	if (s[i] == '+' || s[i] == '-') {
+		negative = (s[i] == '-');
+		++i;
 	}
 
-	char c;
-	while (ss >> c) {
-		if (c == '*') {
-			char var;
-			ss >> var;
-			int power = 1;
-			if (ss.peek() == '^') {
-				ss.get();
-				if (!(ss >> power)) {  
-					throw std::invalid_argument("Invalid input");
-				}
-			}
-			variables_.insert({ var, power });
+	if (i < s.size() && (std::isdigit(s[i]) || s[i] == '.')) {
+		size_t start = i;
+
+		while (i < s.size() && std::isdigit(s[i])) {
+			++i;
 		}
+
+		if (i < s.size() && s[i] == '.') {
+			++i;
+			while (i < s.size() && std::isdigit(s[i])) {
+				++i;
+			}
+		}
+
+		coefficient_ = std::stod(s.substr(start, i - start));
+		has_explicit_coefficient = true;
+	}
+	else {
+		coefficient_ = 1.0;
+	}
+	if (negative) {
+		coefficient_ = -coefficient_;
+	}
+
+	while (i < s.size()) {
+		if (s[i] == '*' || std::isspace(s[i])) {
+			++i;
+			continue;
+		}
+
+		if (!std::isalpha(s[i])) {
+			throw std::invalid_argument("Invalid variable name");
+		}
+
+		char var_name = s[i];
+		++i;
+
+		int power = 1;
+
+		if (i < s.size() && s[i] == '^') {
+			++i;
+
+			if ((i >= s.size() || !std::isdigit(s[i]))) {
+				throw std::invalid_argument("Invalid power after '^'");
+			}
+
+			size_t power_start = i;
+			while (i < s.size() && std::isdigit(s[i])) {
+				++i;
+			}
+			power = std::stoi(s.substr(power_start, i - power_start));
+		}
+
+		variables_.insert({ var_name, power });
+	}	
+	if (is_zero()) {
+		variables_.clear();
+	}
+	if (!has_explicit_coefficient && variables_.is_empty()) {
+		throw std::invalid_argument("Invalid monom format");
 	}
 }
 
@@ -75,7 +131,6 @@ int Polynomial::Monom::total_deg() const {
 	}
 	return deg;
 }
-
 
 bool Polynomial::Monom::is_similar(const Monom& other) const {
 	if (variables_.size() != other.variables_.size()) {
@@ -174,28 +229,24 @@ bool Polynomial::Monom::operator!=(const Monom& other) const {
 }
 
 std::ostream& operator<<(std::ostream& ostr, const Polynomial::Monom& m) {
+	if (m.coefficient_ == 0.0) {
+		ostr << "0";
+		return ostr;
+	}	
+
 	if (m.coefficient_ == -1.0 && !m.variables_.is_empty()) {
 		ostr << "-";
 	}
 	else if (m.variables_.is_empty() || m.coefficient_ != 1.0) {
 		ostr << m.coefficient_;
-		if (!m.variables_.is_empty()) {
-			ostr << "*";
-		}
 	}
 
-	bool first = true;
 	for (const auto& var : m.variables_) {
-		if (!first) {
-			ostr << "*";
-		}
 		ostr << var.name_;
 		if (var.power_ != 1) {
 			ostr << "^" << var.power_;
 		}
-		first = false;
 	}
-
 	return ostr;
 }
 
@@ -489,7 +540,7 @@ SortedList<char> Polynomial::get_variables() const {
 	SortedList<char> res;
 	for (const auto& monom : polynomial_) {
 		for (const auto& vars : monom.variables_) {
-			res.insert(vars.name_);
+			res.insert_unique(vars.name_);
 		}
 	}
 	return res;
