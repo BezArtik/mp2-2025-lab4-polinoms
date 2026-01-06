@@ -332,6 +332,7 @@ Polynomial::Polynomial(std::initializer_list<Polynomial::Monom> init) {
     for (const auto& monom : init) {
         add_monom(monom);
     }
+    normalize();
 }
 
 Polynomial::Polynomial(const std::string& str) {
@@ -352,7 +353,6 @@ Polynomial::Polynomial(const std::string& str) {
 
         curr_pos = next_pos;
     }
-
     normalize();
 }
 
@@ -366,12 +366,9 @@ Polynomial& Polynomial::operator+=(const Monom& rhs) {
 Polynomial& Polynomial::operator-=(const Monom& rhs) {
     if (rhs.is_zero()) return *this;
 
-    Monom negative_monom = rhs;
-    negative_monom.set_coefficient(-negative_monom.coefficient());
-    polynomial_.insert(negative_monom);
-
-    normalize();
-    return *this;
+    Monom negative = rhs;
+    negative.set_coefficient(-negative.coefficient());
+    return *this += negative;
 }
 
 Polynomial& Polynomial::operator+=(const Polynomial& rhs) {
@@ -381,41 +378,11 @@ Polynomial& Polynomial::operator+=(const Polynomial& rhs) {
         return *this;
     }
 
-    SortedList<Monom, MonomCompare> result;
-    auto it1 = polynomial_.cbegin();
-    auto it2 = rhs.polynomial_.cbegin();
-
-    while (it1 != polynomial_.cend() && it2 != rhs.polynomial_.cend()) {
-        if (MonomCompare{}(*it1, *it2)) {
-            result.insert(*it1);
-            ++it1;
-        }
-        else if (MonomCompare{}(*it2, *it1)) {
-            result.insert(*it2);
-            ++it2;
-        }
-        else {
-            Monom curr = *it1;
-            curr.set_coefficient(curr.coefficient() + it2->coefficient());
-            if (!curr.is_zero()) {
-                result.insert(curr);
-            }
-            ++it1;
-            ++it2;
-        }
+    for (const auto& monom : rhs.polynomial_) {
+        polynomial_.insert(monom);
     }
 
-    while (it1 != polynomial_.cend()) {
-        result.insert(*it1);
-        ++it1;
-    }
-
-    while (it2 != rhs.polynomial_.cend()) {
-        result.insert(*it2);
-        ++it2;
-    }
-
-    polynomial_ = std::move(result);
+    normalize();
     return *this;
 }
 
@@ -450,6 +417,7 @@ Polynomial& Polynomial::operator*=(double scalar) {
     }
 
     polynomial_ = std::move(res);
+    normalize();
     return *this;
 }
 
@@ -603,7 +571,6 @@ void Polynomial::add_monom(const Monom& monom) {
     if (!monom.is_zero()) {
         polynomial_.insert(monom);
     }
-    normalize();
 }
 
 double Polynomial::calculate(const SortedList<VariableValue, VariableValueCompare>& values) const {

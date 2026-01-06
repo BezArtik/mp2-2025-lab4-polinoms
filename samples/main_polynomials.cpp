@@ -23,7 +23,7 @@ void input_and_calculate() {
 		"1. A polynomial has an arbitrary number of variables.\n" <<
 		"2. The order of input of terms and variables can be arbitrary.\n" <<
 		"3. Degrees of variables are integers\n" <<
-		"4. The polynomial can only be entered as: a1 * x1^b1 * x2^b2 * x3^b3 * ...  + ...\n";
+		"4. The multiplication sign can be omitted.\n";
     std::cout << "Enter the polynomial: ";
     std::getline(std::cin, input_string);
     Polynomial p(input_string);
