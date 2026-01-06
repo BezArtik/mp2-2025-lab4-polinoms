@@ -38,9 +38,49 @@ bool Polynomial::VariableValueCompare::operator()(const VariableValue& a, const 
     return a.name_ < b.name_;
 }
 
+void Polynomial::Monom::normalize() {
+    if (variables_.is_empty()) return;
+
+    SortedList<Variable, VariableCompare> res;
+    auto it = variables_.cbegin();
+
+    Variable curr = *it;
+    ++it;
+
+    while (it != variables_.cend()) {
+        if (curr.name_ == it->name_) {
+            curr.power_ += it->power_;
+        }
+        else {
+            add_variable(curr);
+            curr = *it;
+        }
+        ++it;
+    }
+
+    add_variable(curr);
+    variables_ = std::move(res);
+}
+
 void Polynomial::Monom::add_variable(const Variable& var) {
-    if (var.power_ != 0) {
-        variables_.insert(var);
+    if (var.power_ == 0) return;
+
+    Variable new_var{ var.name_,var.power_ };
+
+    Variable key{ var.name_,0 };
+    auto it = variables_.find(key);
+
+    if (it != variables_.end()) {
+        Variable updated = *it;
+        updated.power_ += var.power_;
+
+        variables_.erase(it);
+        if (updated.power_ != 0) {
+            variables_.insert(updated);
+        }
+    }
+    else {
+        variables_.insert(new_var);
     }
 }
 
@@ -119,7 +159,7 @@ Polynomial::Monom::Monom(const std::string& str) : coefficient_(0.0) {
             power = std::stoi(s.substr(power_start, i - power_start));
         }
 
-        variables_.insert({ var_name, power });
+        add_variable({ var_name, power });
     }
 
     if (is_zero()) {
@@ -155,10 +195,6 @@ bool Polynomial::Monom::is_similar(const Monom& other) const {
         ++iter2;
     }
     return true;
-}
-
-bool Polynomial::Monom::is_zero() const noexcept {
-    return coefficient_ == 0.0;
 }
 
 Polynomial::Monom& Polynomial::Monom::operator*=(double scalar) {
@@ -289,18 +325,13 @@ void Polynomial::normalize() {
 }
 
 Polynomial::Polynomial(const Polynomial::Monom& monom) {
-    if (!monom.is_zero()) {
-        polynomial_.insert(monom);
-    }
+    add_monom(monom);
 }
 
 Polynomial::Polynomial(std::initializer_list<Polynomial::Monom> init) {
     for (const auto& monom : init) {
-        if (!monom.is_zero()) {
-            polynomial_.insert(monom);
-        }
+        add_monom(monom);
     }
-    normalize();
 }
 
 Polynomial::Polynomial(const std::string& str) {
@@ -543,10 +574,6 @@ std::ostream& operator<<(std::ostream& ostr, const Polynomial& p) {
     return ostr;
 }
 
-bool Polynomial::is_zero() const noexcept {
-    return polynomial_.is_empty();
-}
-
 int Polynomial::deg() const {
     int max_degree = 0;
     for (const auto& monom : polynomial_) {
@@ -555,9 +582,6 @@ int Polynomial::deg() const {
     return max_degree;
 }
 
-size_t Polynomial::term_count() const {
-    return polynomial_.size();
-}
 
 std::string Polynomial::to_string() const {
     std::ostringstream oss;
@@ -573,6 +597,13 @@ SortedList<char> Polynomial::get_variables() const {
         }
     }
     return res;
+}
+
+void Polynomial::add_monom(const Monom& monom) {
+    if (!monom.is_zero()) {
+        polynomial_.insert(monom);
+    }
+    normalize();
 }
 
 double Polynomial::calculate(const SortedList<VariableValue, VariableValueCompare>& values) const {

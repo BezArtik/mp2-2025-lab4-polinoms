@@ -23,20 +23,11 @@ public:
         double coefficient_;
         SortedList<Variable, VariableCompare> variables_;
 
+        void normalize();
+
     public:
         Monom(double coeff = 0.0, std::initializer_list<Variable> vars = {});
         Monom(const std::string& str);
-
-        double coefficient() const { return coefficient_; }
-        const SortedList<Variable, VariableCompare>& variables() const { return variables_; }
-
-        void set_coefficient(double coeff) { coefficient_ = coeff; }
-
-        void add_variable(const Variable& var);
-
-        int total_deg() const;
-        bool is_similar(const Monom& other) const;
-        bool is_zero() const noexcept;
 
         Monom& operator*=(double scalar);
         Monom& operator*=(const Monom& other);
@@ -49,6 +40,16 @@ public:
         bool operator!=(const Monom& other) const;
 
         friend std::ostream& operator<<(std::ostream& ostr, const Monom& m);
+
+        double coefficient() const { return coefficient_; }
+        const SortedList<Variable, VariableCompare>& variables() const { return variables_; }
+
+        void set_coefficient(double coeff) { coefficient_ = coeff; }
+        void add_variable(const Variable& var);
+
+        int total_deg() const;
+        bool is_similar(const Monom& other) const;
+        bool is_zero() const noexcept { return coefficient_ == 0.0; };
     };
 
     struct MonomCompare {
@@ -91,10 +92,11 @@ public:
     auto cbegin() const { return polynomial_.cbegin(); }
     auto cend() const { return polynomial_.cend(); }
 
-    bool is_zero() const noexcept;
+    bool is_zero() const noexcept { return polynomial_.is_empty(); };
+    size_t term_count() const { return polynomial_.size(); };
     int deg() const;
-    size_t term_count() const;
     std::string to_string() const;
     SortedList<char> get_variables() const;
+    void add_monom(const Monom& monom);
     double calculate(const SortedList<VariableValue, VariableValueCompare>& values) const;
 };
