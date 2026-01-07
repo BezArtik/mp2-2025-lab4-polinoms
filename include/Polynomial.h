@@ -89,6 +89,8 @@ public:
 
     auto begin() { return polynomial_.begin(); }
     auto end() { return polynomial_.end(); }
+    auto begin() const { return polynomial_.cbegin(); }
+    auto end() const { return polynomial_.cend(); }
     auto cbegin() const { return polynomial_.cbegin(); }
     auto cend() const { return polynomial_.cend(); }
 
@@ -97,6 +99,5 @@ public:
     int deg() const;
     std::string to_string() const;
     SortedList<char> get_variables() const;
-    void add_monom(const Monom& monom);
     double calculate(const SortedList<VariableValue, VariableValueCompare>& values) const;
 };

@@ -325,12 +325,16 @@ void Polynomial::normalize() {
 }
 
 Polynomial::Polynomial(const Polynomial::Monom& monom) {
-    add_monom(monom);
+    if (!monom.is_zero()) {
+        polynomial_.insert(monom);
+    }
 }
 
 Polynomial::Polynomial(std::initializer_list<Polynomial::Monom> init) {
     for (const auto& monom : init) {
-        add_monom(monom);
+        if (!monom.is_zero()) {
+            polynomial_.insert(monom);
+        }
     }
     normalize();
 }
@@ -565,12 +569,6 @@ SortedList<char> Polynomial::get_variables() const {
         }
     }
     return res;
-}
-
-void Polynomial::add_monom(const Monom& monom) {
-    if (!monom.is_zero()) {
-        polynomial_.insert(monom);
-    }
 }
 
 double Polynomial::calculate(const SortedList<VariableValue, VariableValueCompare>& values) const {
