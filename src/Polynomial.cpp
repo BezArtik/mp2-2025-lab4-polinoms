@@ -2,7 +2,6 @@
 #include <limits>
 #include <string>
 #include <iostream>
-#include <sstream>
 #include <algorithm>
 #include <cctype>
 #include <cmath>
@@ -91,7 +90,7 @@ Polynomial::Monom::Monom(double coeff, std::initializer_list<Variable> vars)
     }
 }
 
-Polynomial::Monom::Monom(const std::string& str) : coefficient_(0.0) {
+Polynomial::Monom::Monom(const std::string& str) : coefficient_(1.0) {
     if (str.empty()) {
         throw std::invalid_argument("Empty string");
     }
@@ -552,13 +551,6 @@ int Polynomial::deg() const {
         max_degree = std::max(max_degree, monom.total_deg());
     }
     return max_degree;
-}
-
-
-std::string Polynomial::to_string() const {
-    std::ostringstream oss;
-    oss << *this;
-    return oss.str();
 }
 
 SortedList<char> Polynomial::get_variables() const {

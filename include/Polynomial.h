@@ -26,7 +26,7 @@ public:
         void normalize();
 
     public:
-        Monom(double coeff = 0.0, std::initializer_list<Variable> vars = {});
+        Monom(double coeff = 1.0, std::initializer_list<Variable> vars = {});
         Monom(const std::string& str);
 
         Monom& operator*=(double scalar);
@@ -97,7 +97,6 @@ public:
     bool is_zero() const noexcept { return polynomial_.is_empty(); };
     size_t term_count() const { return polynomial_.size(); };
     int deg() const;
-    std::string to_string() const;
     SortedList<char> get_variables() const;
     double calculate(const SortedList<VariableValue, VariableValueCompare>& values) const;
 };
