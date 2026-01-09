@@ -23,8 +23,6 @@ public:
         double coefficient_;
         SortedList<Variable, VariableCompare> variables_;
 
-        void normalize();
-
     public:
         Monom(double coeff = 1.0, std::initializer_list<Variable> vars = {});
         Monom(const std::string& str);

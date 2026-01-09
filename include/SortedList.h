@@ -342,9 +342,9 @@ template <typename T, typename Compare>
 void SortedList<T, Compare>::clear() noexcept {
     Node* curr = sentinel_.next_;
     while (curr != &sentinel_) {
-        Node* next_ = curr->next_;
+        Node* next = curr->next_;
         delete curr;
-        curr = next_;
+        curr = next;
     }
     sentinel_.next_ = &sentinel_;
     sentinel_.prev_ = &sentinel_;
@@ -427,7 +427,6 @@ SortedList<T, Compare>::insert_unique(const T& data) {
     if (is_empty()) {
         insert(data);
     }
-    Node* p = new Node(data);
     Node* curr = sentinel_.next_;
     while (curr != &sentinel_ && comp_(curr->data_, data)) {
         curr = curr->next_;
@@ -435,6 +434,7 @@ SortedList<T, Compare>::insert_unique(const T& data) {
     if (curr != &sentinel_ && !comp_(data, curr->data_) && !comp_(curr->data_, data)) {
         return Iterator(curr);
     }
+    Node* p = new Node(data);
     p->next_ = curr;
     p->prev_ = curr->prev_;
     curr->prev_->next_ = p;

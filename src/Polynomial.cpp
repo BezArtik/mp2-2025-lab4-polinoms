@@ -37,30 +37,6 @@ bool Polynomial::VariableValueCompare::operator()(const VariableValue& a, const 
     return a.name_ < b.name_;
 }
 
-void Polynomial::Monom::normalize() {
-    if (variables_.is_empty()) return;
-
-    SortedList<Variable, VariableCompare> res;
-    auto it = variables_.cbegin();
-
-    Variable curr = *it;
-    ++it;
-
-    while (it != variables_.cend()) {
-        if (curr.name_ == it->name_) {
-            curr.power_ += it->power_;
-        }
-        else {
-            add_variable(curr);
-            curr = *it;
-        }
-        ++it;
-    }
-
-    add_variable(curr);
-    variables_ = std::move(res);
-}
-
 void Polynomial::Monom::add_variable(const Variable& var) {
     if (var.power_ == 0) return;
 
@@ -368,10 +344,7 @@ Polynomial& Polynomial::operator+=(const Monom& rhs) {
 
 Polynomial& Polynomial::operator-=(const Monom& rhs) {
     if (rhs.is_zero()) return *this;
-
-    Monom negative = rhs;
-    negative.set_coefficient(-negative.coefficient());
-    return *this += negative;
+    return *this += (-1.0) * rhs;
 }
 
 Polynomial& Polynomial::operator+=(const Polynomial& rhs) {
