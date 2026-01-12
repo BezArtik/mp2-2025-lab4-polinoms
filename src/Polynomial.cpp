@@ -2,7 +2,6 @@
 #include <limits>
 #include <string>
 #include <iostream>
-#include <algorithm>
 #include <cctype>
 #include <cmath>
 
@@ -519,11 +518,8 @@ std::ostream& operator<<(std::ostream& ostr, const Polynomial& p) {
 }
 
 int Polynomial::deg() const {
-    int max_degree = 0;
-    for (const auto& monom : polynomial_) {
-        max_degree = std::max(max_degree, monom.total_deg());
-    }
-    return max_degree;
+    if (polynomial_.is_empty()) return 0;
+    return polynomial_.front().total_deg();
 }
 
 SortedList<char> Polynomial::get_variables() const {

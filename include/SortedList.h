@@ -405,13 +405,13 @@ const T& SortedList<T, Compare>::back() const {
 template <typename T, typename Compare>
 typename SortedList<T, Compare>::Iterator
 SortedList<T, Compare>::insert(const T& data) {
-    Node* p = new Node(data);
     Node* curr = sentinel_.next_;
 
     while (curr != &sentinel_ && comp_(curr->data_, data)) {
         curr = curr->next_;
     }
 
+    Node* p = new Node(data);
     p->next_ = curr;
     p->prev_ = curr->prev_;
     curr->prev_->next_ = p;
