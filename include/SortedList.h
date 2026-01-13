@@ -65,7 +65,7 @@ public:
     template <typename Iter>
     SortedList(Iter first, Iter last);
 
-    SortedList(std::initializer_list<T> init);
+    SortedList(const std::initializer_list<T>& init);
     SortedList(const SortedList& other);
     SortedList& operator=(const SortedList& other);
     SortedList(SortedList&& other) noexcept;
@@ -273,16 +273,29 @@ SortedList<T, Compare>::SortedList(Iter first, Iter last)
 }
 
 template <typename T, typename Compare>
-SortedList<T, Compare>::SortedList(std::initializer_list<T> init)
+SortedList<T, Compare>::SortedList(const std::initializer_list<T>& init)
     : SortedList(init.begin(), init.end()) {
 }
 
 template <typename T, typename Compare>
 SortedList<T, Compare>::SortedList(const SortedList& other)
-    : SortedList() {
-    for (const auto& item : other) {
-        insert(item);
+    : sentinel_(), size_(0), comp_(other.comp_) {
+    Node* curr = other.sentinel_.next_;
+    Node* copy_prev = &sentinel_;
+
+    while (curr != &other.sentinel_) {
+        Node* p = new Node(curr->data_);
+        copy_prev->next_ = p;
+        p->prev_ = copy_prev;
+        p->next_ = &sentinel_;
+        copy_prev = p;
+
+        curr = curr->next_;
+        ++size_;
     }
+
+    sentinel_.prev_ = copy_prev;
+    copy_prev->next_ = &sentinel_;
 }
 
 template <typename T, typename Compare>
@@ -292,9 +305,23 @@ SortedList<T, Compare>& SortedList<T, Compare>::operator=(const SortedList& othe
     }
     clear();
     comp_ = other.comp_;
-    for (const auto& item : other) {
-        insert(item);
+    Node* curr = other.sentinel_.next_;
+    Node* copy_prev = &sentinel_;
+
+    while (curr != &other.sentinel_) {
+        Node* p = new Node(curr->data_);
+        copy_prev->next_ = p;
+        p->prev_ = copy_prev;
+        p->next_ = &sentinel_;
+        copy_prev = p;
+
+        curr = curr->next_;
+        ++size_;
     }
+
+    sentinel_.prev_ = copy_prev;
+    copy_prev->next_ = &sentinel_;
+
     return *this;
 }
 
@@ -346,8 +373,7 @@ void SortedList<T, Compare>::clear() noexcept {
         delete curr;
         curr = next;
     }
-    sentinel_.next_ = &sentinel_;
-    sentinel_.prev_ = &sentinel_;
+    sentinel_.next_ = sentinel_.prev_ = &sentinel_;
     size_ = 0;
 }
 
