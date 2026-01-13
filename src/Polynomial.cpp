@@ -5,10 +5,6 @@
 #include <cctype>
 #include <cmath>
 
-bool Polynomial::VariableCompare::operator()(const Variable& v1, const Variable& v2) const noexcept {
-    return v1.name_ < v2.name_;
-}
-
 bool Polynomial::MonomCompare::operator()(const Monom& m1, const Monom& m2) const noexcept {
     int m1_deg = m1.total_deg();
     int m2_deg = m2.total_deg();
@@ -30,10 +26,6 @@ bool Polynomial::MonomCompare::operator()(const Monom& m1, const Monom& m2) cons
         ++iter_m2;
     }
     return m1.coefficient() < m2.coefficient();
-}
-
-bool Polynomial::VariableValueCompare::operator()(const VariableValue& a, const VariableValue& b) const noexcept {
-    return a.name_ < b.name_;
 }
 
 void Polynomial::Monom::add_variable(const Variable& var) {
@@ -58,14 +50,15 @@ void Polynomial::Monom::add_variable(const Variable& var) {
     }
 }
 
-Polynomial::Monom::Monom(double coeff, std::initializer_list<Variable> vars)
+Polynomial::Monom::Monom(double coeff, const std::initializer_list<Variable>& vars)
     : coefficient_(coeff) {
     for (const auto& var : vars) {
         add_variable(var);
     }
 }
 
-Polynomial::Monom::Monom(const std::string& str) : coefficient_(1.0) {
+Polynomial::Monom::Monom(const std::string& str) 
+    : coefficient_(1.0) {
     if (str.empty()) {
         throw std::invalid_argument("Empty string");
     }
@@ -107,7 +100,7 @@ Polynomial::Monom::Monom(const std::string& str) : coefficient_(1.0) {
     }
 
     while (i < s.size()) {
-        if (s[i] == '*' || std::isspace(s[i])) {
+        if (s[i] == '*') {
             ++i;
             continue;
         }
@@ -222,7 +215,7 @@ Polynomial::Monom& Polynomial::Monom::operator*=(const Monom& other) {
 
 Polynomial::Monom operator*(const Polynomial::Monom& other, double scalar) {
     Polynomial::Monom res = other;
-    res.set_coefficient(res.coefficient() * scalar);
+    res *= scalar;
     return res;
 }
 
@@ -304,7 +297,7 @@ Polynomial::Polynomial(const Polynomial::Monom& monom) {
     }
 }
 
-Polynomial::Polynomial(std::initializer_list<Polynomial::Monom> init) {
+Polynomial::Polynomial(const std::initializer_list<Polynomial::Monom>& init) {
     for (const auto& monom : init) {
         if (!monom.is_zero()) {
             polynomial_.insert(monom);
@@ -342,7 +335,6 @@ Polynomial& Polynomial::operator+=(const Monom& rhs) {
 }
 
 Polynomial& Polynomial::operator-=(const Monom& rhs) {
-    if (rhs.is_zero()) return *this;
     return *this += (-1.0) * rhs;
 }
 
@@ -380,7 +372,7 @@ Polynomial& Polynomial::operator*=(double scalar) {
         return *this;
     }
 
-    if (scalar == 1.0) {
+    if (std::abs(scalar - 1.0) < std::numeric_limits<double>::epsilon()) {
         return *this;
     }
 
@@ -463,19 +455,14 @@ Polynomial operator*(Polynomial lhs, const Polynomial& rhs) {
 }
 
 bool Polynomial::operator==(const Polynomial& other) const {
-    Polynomial this_norm(*this);
-    Polynomial other_norm(other);
-    this_norm.normalize();
-    other_norm.normalize();
-
-    if (this_norm.term_count() != other_norm.term_count()) {
+    if (term_count() != other.term_count()) {
         return false;
     }
 
-    auto it1 = this_norm.polynomial_.cbegin();
-    auto it2 = other_norm.polynomial_.cbegin();
+    auto it1 = polynomial_.cbegin();
+    auto it2 = other.polynomial_.cbegin();
 
-    while (it1 != this_norm.polynomial_.cend() && it2 != other_norm.polynomial_.cend()) {
+    while (it1 != polynomial_.cend() && it2 != other.polynomial_.cend()) {
         if (*it1 != *it2) {
             return false;
         }

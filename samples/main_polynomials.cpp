@@ -36,7 +36,7 @@ int main() {
     try {
         input_and_calculate();
     }
-    catch (std::exception& e) {
+    catch (const std::exception& e) {
         std::cout << e.what() << std::endl;
     }
 	return 0;

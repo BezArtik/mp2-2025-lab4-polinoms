@@ -8,14 +8,14 @@ public:
         int power_;
     };
     struct VariableCompare {
-        bool operator()(const Variable& v1, const Variable& v2) const noexcept;
+        bool operator()(const Variable& v1, const Variable& v2) const noexcept { return v1.name_ < v2.name_; }
     };
     struct VariableValue {
         char name_;
         double value_;
     };
     struct VariableValueCompare {
-        bool operator()(const VariableValue& a, const VariableValue& b) const noexcept;
+        bool operator()(const VariableValue& a, const VariableValue& b) const noexcept { return a.name_ < b.name_; }
     };
 
     class Monom {
@@ -24,7 +24,7 @@ public:
         SortedList<Variable, VariableCompare> variables_;
 
     public:
-        Monom(double coeff = 1.0, std::initializer_list<Variable> vars = {});
+        Monom(double coeff = 1.0, const std::initializer_list<Variable>& vars = {});
         Monom(const std::string& str);
 
         Monom& operator*=(double scalar);
@@ -61,7 +61,7 @@ private:
 public:
     Polynomial() = default;
     Polynomial(const Monom& monom);
-    Polynomial(std::initializer_list<Monom> init);
+    Polynomial(const std::initializer_list<Monom>& init);
     Polynomial(const std::string& str);
 
     Polynomial& operator+=(const Monom& rhs);

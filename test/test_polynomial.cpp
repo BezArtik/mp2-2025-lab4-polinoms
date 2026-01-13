@@ -144,6 +144,12 @@ TEST(Polynomial, similar_polynomials_is_equal) {
 	EXPECT_EQ(p1, p2);
 }
 
+TEST(Polynomial, non_similar_polynomials_is_not_equal) {
+	Polynomial p1("3abc - 15bca + xyz");
+	Polynomial p2("abc + xyz");
+	EXPECT_NE(p1, p2);
+}
+
 TEST(Polynomial, polynomial_is_normalize_automatically) {
 	Polynomial p1("3a^2bc^2 - 2bc^2a^2 + xyz - 4yzx");
 	EXPECT_EQ(p1.term_count(), 2);
