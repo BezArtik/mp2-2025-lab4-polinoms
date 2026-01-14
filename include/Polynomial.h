@@ -85,12 +85,12 @@ public:
 
     friend std::ostream& operator<<(std::ostream& ostr, const Polynomial& p);
 
-    auto begin() { return polynomial_.begin(); }
-    auto end() { return polynomial_.end(); }
-    auto begin() const { return polynomial_.cbegin(); }
-    auto end() const { return polynomial_.cend(); }
+    auto begin()        { return polynomial_.begin(); }
+    auto end()          { return polynomial_.end(); }
+    auto begin()  const { return polynomial_.cbegin(); }
+    auto end()    const { return polynomial_.cend(); }
     auto cbegin() const { return polynomial_.cbegin(); }
-    auto cend() const { return polynomial_.cend(); }
+    auto cend()   const { return polynomial_.cend(); }
 
     bool is_zero() const noexcept { return polynomial_.is_empty(); };
     size_t term_count() const { return polynomial_.size(); };

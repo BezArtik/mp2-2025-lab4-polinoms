@@ -182,17 +182,17 @@ Polynomial::Monom& Polynomial::Monom::operator*=(const Monom& other) {
 
     while (iter1 != variables_.cend() && iter2 != other.variables_.cend()) {
         if (iter1->name_ < iter2->name_) {
-            res.insert(*iter1);
+            res.insert_back(*iter1);
             ++iter1;
         }
         else if (iter1->name_ > iter2->name_) {
-            res.insert(*iter2);
+            res.insert_back(*iter2);
             ++iter2;
         }
         else {
             int new_pow = iter1->power_ + iter2->power_;
             if (new_pow != 0) {
-                res.insert({ iter1->name_, new_pow });
+                res.insert_back({ iter1->name_, new_pow });
             }
             ++iter1;
             ++iter2;
@@ -200,15 +200,15 @@ Polynomial::Monom& Polynomial::Monom::operator*=(const Monom& other) {
     }
 
     while (iter1 != variables_.cend()) {
-        res.insert(*iter1);
+        res.insert_back(*iter1);
         ++iter1;
     }
 
     while (iter2 != other.variables_.cend()) {
-        res.insert(*iter2);
+        res.insert_back(*iter2);
         ++iter2;
     }
-
+    res.sort();
     variables_ = std::move(res);
     return *this;
 }
@@ -266,6 +266,9 @@ void Polynomial::normalize() {
     if (polynomial_.is_empty()) return;
 
     SortedList<Monom, MonomCompare> norm_polynomial;
+
+    polynomial_.sort();
+
     auto it = polynomial_.cbegin();
 
     Monom curr = *it;
@@ -277,15 +280,14 @@ void Polynomial::normalize() {
         }
         else {
             if (!curr.is_zero()) {
-                norm_polynomial.insert(curr);
+                norm_polynomial.insert_back(curr);
             }
             curr = *it;
         }
         ++it;
     }
-
     if (!curr.is_zero()) {
-        norm_polynomial.insert(curr);
+        norm_polynomial.insert_back(curr);
     }
 
     polynomial_ = std::move(norm_polynomial);
@@ -293,17 +295,19 @@ void Polynomial::normalize() {
 
 Polynomial::Polynomial(const Polynomial::Monom& monom) {
     if (!monom.is_zero()) {
-        polynomial_.insert(monom);
+        polynomial_.insert_back(monom);
     }
 }
 
 Polynomial::Polynomial(const std::initializer_list<Polynomial::Monom>& init) {
     for (const auto& monom : init) {
         if (!monom.is_zero()) {
-            polynomial_.insert(monom);
+            polynomial_.insert_back(monom);
         }
     }
-    normalize();
+    if (!polynomial_.is_empty()) {
+        normalize();
+    }
 }
 
 Polynomial::Polynomial(const std::string& str) {
@@ -324,12 +328,14 @@ Polynomial::Polynomial(const std::string& str) {
 
         curr_pos = next_pos;
     }
-    normalize();
+    if (!polynomial_.is_empty()) {
+        normalize();
+    }
 }
 
 Polynomial& Polynomial::operator+=(const Monom& rhs) {
     if (rhs.is_zero()) return *this;
-    polynomial_.insert(rhs);
+    polynomial_.insert_back(rhs);
     normalize();
     return *this;
 }
@@ -346,20 +352,23 @@ Polynomial& Polynomial::operator+=(const Polynomial& rhs) {
     }
 
     for (const auto& monom : rhs.polynomial_) {
-        polynomial_.insert(monom);
+        polynomial_.insert_back(monom);
     }
-
     normalize();
     return *this;
 }
 
 Polynomial& Polynomial::operator-=(const Polynomial& rhs) {
     if (rhs.is_zero()) return *this;
+    if (is_zero()) {
+        *this = rhs;
+        return *this;
+    }
 
     for (const auto& monom : rhs.polynomial_) {
         Monom tmp = monom;
         tmp.set_coefficient(-tmp.coefficient());
-        polynomial_.insert(tmp);
+        polynomial_.insert_back(tmp);
     }
 
     normalize();
@@ -380,7 +389,7 @@ Polynomial& Polynomial::operator*=(double scalar) {
     for (const auto& monom : polynomial_) {
         Monom curr = monom;
         curr.set_coefficient(curr.coefficient() * scalar);
-        res.insert(curr);
+        res.insert_back(curr);
     }
 
     polynomial_ = std::move(res);
@@ -398,7 +407,7 @@ Polynomial& Polynomial::operator*=(const Monom& rhs) {
     for (const auto& monom : polynomial_) {
         Monom curr = monom;
         curr *= rhs;
-        res.insert(curr);
+        res.insert_back(curr);
     }
 
     polynomial_ = std::move(res);
@@ -417,7 +426,7 @@ Polynomial& Polynomial::operator*=(const Polynomial& rhs) {
         for (const auto& monom2 : rhs.polynomial_) {
             Monom res_monom = monom1;
             res_monom *= monom2;
-            res_poly.insert(res_monom);
+            res_poly.insert_back(res_monom);
         }
     }
 

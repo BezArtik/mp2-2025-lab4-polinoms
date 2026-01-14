@@ -83,14 +83,16 @@ public:
 
     Iterator insert(const T& data);
     Iterator insert_unique(const T& data);
-
     template <typename Iter>
     void insert(Iter first, Iter last);
+    void insert_back(const T& data);
 
     Iterator find(const T& key);
     ConstIterator find(const T& key) const;
 
     Iterator erase(Iterator pos);
+
+    void sort();
 
     ConstIterator begin()  const { return ConstIterator(sentinel_.next_); }
     ConstIterator end()    const { return ConstIterator(&sentinel_); }
@@ -98,6 +100,11 @@ public:
     ConstIterator cend()   const { return end(); }
     Iterator      begin()        { return Iterator(sentinel_.next_); }
     Iterator      end()          { return Iterator(&sentinel_); }
+
+private:
+
+	Node* merge_sort(Node* head);
+
 };
 
 // ----------------------------------------------------------------------------
@@ -384,11 +391,22 @@ SortedList<T, Compare>::insert_unique(const T& data) {
 }
 
 template<typename T, typename Compare>
+void SortedList<T, Compare>::insert_back(const T& data) {
+	Node* p = new Node(data);
+	p->next_ = &sentinel_;
+	p->prev_ = sentinel_.prev_;
+	sentinel_.prev_->next_ = p;
+	sentinel_.prev_ = p;
+	++size_;
+}
+
+template<typename T, typename Compare>
 template <typename Iter>
 void SortedList<T,Compare>::insert(Iter first, Iter last) {
     while (first != last) {
-        insert(*first++);
+        insert_back(*first++);
     }
+	sort();
 }
 
 template<typename T, typename Compare>
@@ -431,4 +449,68 @@ SortedList<T, Compare>::erase(Iterator pos) {
     --size_;
 
     return next_it;
+}
+
+template <typename T, typename Compare>
+typename SortedList<T, Compare>::Node* 
+SortedList<T,Compare>::merge_sort(typename SortedList<T, Compare>::Node* head) {
+    if (!head || head->next_ == &sentinel_) {
+        return head;
+    }
+
+    Node* slow = head;
+    Node* fast = head->next_;
+    while (fast != &sentinel_ && fast->next_ != &sentinel_) {
+        slow = slow->next_;
+        fast = fast->next_->next_;
+    }
+
+    Node* mid = slow->next_;
+    slow->next_ = &sentinel_;
+    mid->prev_ = &sentinel_;
+    Node* left = merge_sort(head);
+    Node* right = merge_sort(mid);
+
+    Node fict;
+    Node* tail = &fict;
+    while (left != &sentinel_ && right != &sentinel_) {
+        if (comp_(left->data_, right->data_)) {
+            tail->next_ = left;
+            left->prev_ = tail;
+            left = left->next_;
+        }
+        else {
+            tail->next_ = right;
+            right->prev_ = tail;
+            right = right->next_;
+        }
+        tail = tail->next_;
+    }
+    if (left != &sentinel_) {
+        tail->next_ = left;
+        left->prev_ = tail;
+    }
+    else {
+        tail->next_ = right;
+        right->prev_ = tail;
+    }
+    return fict.next_;
+}
+
+
+template <typename T, typename Compare>
+void SortedList<T, Compare>::sort() {
+    if (size_ <= 1) {
+        return;
+    }
+    Node* new_head = merge_sort(sentinel_.next_);
+    sentinel_.next_ = new_head;
+    new_head->prev_ = &sentinel_;
+
+    Node* curr = new_head;
+    while (curr->next_ != &sentinel_) {
+        curr = curr->next_;
+    }
+    sentinel_.prev_ = curr;
+    curr->next_ = &sentinel_;
 }

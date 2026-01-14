@@ -43,7 +43,18 @@ TEST(SortedList, back_is_correct) {
 
 TEST(SortedList, can_insert_elements) {
     SortedList<int> list;
-    ASSERT_NO_THROW(list.insert(1));
+    list.insert(2);
+    list.insert(1);
+    EXPECT_EQ(list.front(), 1);
+    EXPECT_EQ(list.back(), 2);
+}
+
+TEST(SortedList, can_insert_back_elements) {
+    SortedList<int> list;
+    list.insert_back(2);
+    list.insert_back(1);
+    EXPECT_EQ(list.front(), 2);
+    EXPECT_EQ(list.back(), 1);
 }
 
 TEST(SortedList, insert_duplicate_values) {
@@ -258,6 +269,22 @@ TEST(SortedList, move_assignment) {
     int i = 1;
     for (const auto& val : list2) {
         EXPECT_EQ(val, i++);
+    }
+}
+
+TEST(SortedList, can_sort_elements) {
+    SortedList<int> list;
+    const int N = 1'000'000;
+
+    for (int i = N; i > 0; --i) {
+        list.insert_back(i);
+    }
+    list.sort();
+
+    int i = 1;
+    for (const auto& x : list) {
+        EXPECT_EQ(x, i);
+        ++i;
     }
 }
 
