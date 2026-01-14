@@ -12,7 +12,6 @@ TEST(SortedList, empty_has_zero_size) {
     EXPECT_EQ(list.size(), 0);
 }
 
-
 TEST(SortedList, with_elements_is_not_empty) {
     SortedList<int> list = { 1,5,6,3,4 };
     EXPECT_FALSE(list.is_empty());

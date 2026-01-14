@@ -13,8 +13,8 @@ private:
         Node* next_;
         Node* prev_;
 
-        Node();
-        Node(const T& data);
+        Node() : data_(), next_(this), prev_(this) {}
+        Node(const T& data) : data_(data), next_(nullptr), prev_(nullptr) {}
     };
 
     Node sentinel_;
@@ -27,8 +27,8 @@ public:
     public:
         friend class SortedList<T, Compare>;
 
-        Iterator(Node* node = nullptr);
-        Iterator(const Iterator& other);
+        Iterator(Node* node = nullptr) : curr_(node) {}
+        Iterator(const Iterator& other) : curr_(other.curr_) {}
 
         T& operator*();
         T* operator->();
@@ -37,8 +37,8 @@ public:
         Iterator& operator--();
         Iterator operator--(int);
 
-        bool operator==(const Iterator& other) const noexcept;
-        bool operator!=(const Iterator& other) const noexcept;
+        bool operator==(const Iterator& other) const noexcept { return curr_ == other.curr_; }
+        bool operator!=(const Iterator& other) const noexcept { return curr_ != other.curr_; }
     };
 
     class ConstIterator {
@@ -46,8 +46,8 @@ public:
     public:
         friend class SortedList<T, Compare>;
 
-        ConstIterator(const Node* node = nullptr);
-        ConstIterator(const ConstIterator& other);
+        ConstIterator(const Node* node = nullptr) : curr_(node) {}
+        ConstIterator(const ConstIterator& other) : curr_(other.curr_) {}
 
         const T& operator*() const;
         const T* operator->() const;
@@ -56,25 +56,25 @@ public:
         ConstIterator& operator--();
         ConstIterator operator--(int);
 
-        bool operator==(const ConstIterator& other) const noexcept;
-        bool operator!=(const ConstIterator& other) const noexcept;
+        bool operator==(const ConstIterator& other) const noexcept { return curr_ == other.curr_; }
+        bool operator!=(const ConstIterator& other) const noexcept { return curr_ != other.curr_; }
     };
 
-    SortedList(); 
+    SortedList() : sentinel_(), size_(0), comp_() { sentinel_.next_ = sentinel_.prev_ = &sentinel_; }
 
     template <typename Iter>
-    SortedList(Iter first, Iter last);
+    SortedList(Iter first, Iter last) : SortedList() { insert(first, last); }
 
-    SortedList(const std::initializer_list<T>& init);
+    SortedList(const std::initializer_list<T>& init) : SortedList(init.begin(), init.end()) {}
     SortedList(const SortedList& other);
     SortedList& operator=(const SortedList& other);
     SortedList(SortedList&& other) noexcept;
     SortedList& operator=(SortedList&& other) noexcept;
-    ~SortedList();
+    ~SortedList() { clear(); }
 
     void clear() noexcept;
-    bool is_empty() const noexcept;
-    size_t size() const noexcept;
+    bool is_empty() const noexcept { return size_ == 0; }
+    size_t size() const noexcept { return size_; }
 
     T& front();
     const T& front() const;
@@ -92,42 +92,17 @@ public:
 
     Iterator erase(Iterator pos);
 
-    ConstIterator begin() const;
-    ConstIterator end() const;
-    ConstIterator cbegin() const;
-    ConstIterator cend() const;
-    Iterator begin();
-    Iterator end();
+    ConstIterator begin()  const { return ConstIterator(sentinel_.next_); }
+    ConstIterator end()    const { return ConstIterator(&sentinel_); }
+    ConstIterator cbegin() const { return begin(); }
+    ConstIterator cend()   const { return end(); }
+    Iterator      begin()        { return Iterator(sentinel_.next_); }
+    Iterator      end()          { return Iterator(&sentinel_); }
 };
-
-
-// ----------------------------------------------------------------------------
-//  NODE
-// ----------------------------------------------------------------------------
-
-template <typename T, typename Compare>
-SortedList<T, Compare>::Node::Node()
-    : data_(), next_(this), prev_(this) {
-}
-
-template <typename T, typename Compare>
-SortedList<T, Compare>::Node::Node(const T& data_)
-    : data_(data_), next_(nullptr), prev_(nullptr) {
-}
 
 // ----------------------------------------------------------------------------
 // ITERATOR
 // ----------------------------------------------------------------------------
-
-template <typename T, typename Compare>
-SortedList<T, Compare>::Iterator::Iterator(Node* node)
-    : curr_(node) {
-}
-
-template <typename T, typename Compare>
-SortedList<T, Compare>::Iterator::Iterator(const Iterator& other)
-    : curr_(other.curr_) {
-}
 
 template <typename T, typename Compare>
 T& SortedList<T, Compare>::Iterator::operator*() {
@@ -175,29 +150,9 @@ SortedList<T, Compare>::Iterator::operator--(int) {
     return t;
 }
 
-template <typename T, typename Compare>
-bool SortedList<T, Compare>::Iterator::operator==(const Iterator& other) const noexcept {
-    return curr_ == other.curr_;
-}
-
-template <typename T, typename Compare>
-bool SortedList<T, Compare>::Iterator::operator!=(const Iterator& other) const noexcept {
-    return curr_ != other.curr_;
-}
-
 // ----------------------------------------------------------------------------
 // CONST ITERATOR
 // ----------------------------------------------------------------------------
-
-template <typename T, typename Compare>
-SortedList<T, Compare>::ConstIterator::ConstIterator(const Node* node)
-    : curr_(node) {
-}
-
-template <typename T, typename Compare>
-SortedList<T, Compare>::ConstIterator::ConstIterator(const ConstIterator& other)
-    : curr_(other.curr_) {
-}
 
 template <typename T, typename Compare>
 const T& SortedList<T, Compare>::ConstIterator::operator*() const {
@@ -245,37 +200,9 @@ SortedList<T, Compare>::ConstIterator::operator--(int) {
     return t;
 }
 
-template <typename T, typename Compare>
-bool SortedList<T, Compare>::ConstIterator::operator==(const ConstIterator& other) const noexcept {
-    return curr_ == other.curr_;
-}
-
-template <typename T, typename Compare>
-bool SortedList<T, Compare>::ConstIterator::operator!=(const ConstIterator& other) const noexcept {
-    return curr_ != other.curr_;
-}
-
 // ----------------------------------------------------------------------------
 // CONSTRUCTORS AND DESTRUCTOR
 // ----------------------------------------------------------------------------
-
-template <typename T, typename Compare>
-SortedList<T, Compare>::SortedList()
-    : sentinel_(), size_(0), comp_() {
-    sentinel_.next_ = sentinel_.prev_ = &sentinel_;
-}
-
-template <typename T, typename Compare>
-template <typename Iter>
-SortedList<T, Compare>::SortedList(Iter first, Iter last)
-    : SortedList() {
-    insert(first, last);
-}
-
-template <typename T, typename Compare>
-SortedList<T, Compare>::SortedList(const std::initializer_list<T>& init)
-    : SortedList(init.begin(), init.end()) {
-}
 
 template <typename T, typename Compare>
 SortedList<T, Compare>::SortedList(const SortedList& other)
@@ -328,7 +255,7 @@ SortedList<T, Compare>& SortedList<T, Compare>::operator=(const SortedList& othe
 template <typename T, typename Compare>
 SortedList<T, Compare>::SortedList(SortedList&& other) noexcept
     : sentinel_(), size_(other.size_), comp_(std::move(other.comp_)) {
-    if (other.size_ != 0) {
+    if (!other.is_empty()) {
         sentinel_.next_ = other.sentinel_.next_;
         sentinel_.prev_ = other.sentinel_.prev_;
         sentinel_.next_->prev_ = &sentinel_;
@@ -351,7 +278,7 @@ SortedList<T, Compare>& SortedList<T, Compare>::operator=(SortedList&& other) no
     size_ = other.size_;
     comp_ = std::move(other.comp_);
 
-    if (other.size_ != 0) {
+    if (!other.is_empty()) {
         sentinel_.next_ = other.sentinel_.next_;
         sentinel_.prev_ = other.sentinel_.prev_;
         sentinel_.next_->prev_ = &sentinel_;
@@ -377,24 +304,10 @@ void SortedList<T, Compare>::clear() noexcept {
     size_ = 0;
 }
 
-template <typename T, typename Compare>
-SortedList<T, Compare>::~SortedList() {
-    clear();
-}
 
 // ----------------------------------------------------------------------------
 // BASIC METHODS
 // ----------------------------------------------------------------------------
-
-template <typename T, typename Compare>
-bool SortedList<T, Compare>::is_empty() const noexcept {
-    return size_ == 0;
-}
-
-template <typename T, typename Compare>
-size_t SortedList<T, Compare>::size() const noexcept {
-    return size_;
-}
 
 template <typename T, typename Compare>
 T& SortedList<T, Compare>::front() {
@@ -518,44 +431,4 @@ SortedList<T, Compare>::erase(Iterator pos) {
     --size_;
 
     return next_it;
-}
-
-// ----------------------------------------------------------------------------
-// ITERATORS
-// ----------------------------------------------------------------------------
-
-template <typename T, typename Compare>
-typename SortedList<T, Compare>::ConstIterator
-SortedList<T, Compare>::begin() const {
-    return ConstIterator(sentinel_.next_);
-}
-
-template <typename T, typename Compare>
-typename SortedList<T, Compare>::ConstIterator
-SortedList<T, Compare>::end() const {
-    return ConstIterator(&sentinel_);
-}
-
-template <typename T, typename Compare>
-typename SortedList<T, Compare>::ConstIterator
-SortedList<T, Compare>::cbegin() const {
-    return begin();
-}
-
-template <typename T, typename Compare>
-typename SortedList<T, Compare>::ConstIterator
-SortedList<T, Compare>::cend() const {
-    return end();
-}
-
-template <typename T, typename Compare>
-typename SortedList<T, Compare>::Iterator
-SortedList<T, Compare>::begin() {
-    return Iterator(sentinel_.next_);
-}
-
-template <typename T, typename Compare>
-typename SortedList<T, Compare>::Iterator
-SortedList<T, Compare>::end() {
-    return Iterator(&sentinel_);
 }
