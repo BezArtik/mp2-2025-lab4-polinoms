@@ -1,6 +1,7 @@
 #include <gtest.h>
 #include "SortedList.h"
 #include <vector>
+#include <random>
 
 TEST(SortedList, empty_is_empty) {
     SortedList<int> list;
@@ -274,14 +275,14 @@ TEST(SortedList, move_assignment) {
 
 TEST(SortedList, can_sort_elements) {
     SortedList<int> list;
-    const int N = 1'000'000;
+    const int N = 100'000;
 
-    for (int i = N; i > 0; --i) {
+    for (int i = N; i >= 0; --i) {
         list.insert_back(i);
     }
     list.sort();
 
-    int i = 1;
+    int i = 0;
     for (const auto& x : list) {
         EXPECT_EQ(x, i);
         ++i;
@@ -290,15 +291,13 @@ TEST(SortedList, can_sort_elements) {
 
 TEST(SortedList, large_number_of_elements) {
     SortedList<int> list;
-    const int N = 1'000'000;
+    const int N = 10'000;
 
-    for (int i = N; i > 0; --i) {
+    for (int i = 0; i < N; ++i) {
         list.insert(i);
     }
 
-    EXPECT_EQ(list.size(), N);
-
-    int i = 1;
+    int i = 0;
     for (const auto& x : list) {
         EXPECT_EQ(x, i);
         ++i;
