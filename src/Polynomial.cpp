@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cctype>
 #include <cmath>
+#include <initializer_list>
 
 bool Polynomial::MonomCompare::operator()(const Monom& m1, const Monom& m2) const noexcept {
     int m1_deg = m1.total_deg();
@@ -208,25 +209,20 @@ Polynomial::Monom& Polynomial::Monom::operator*=(const Monom& other) {
         res.insert_back(*iter2);
         ++iter2;
     }
-    res.sort();
     variables_ = std::move(res);
     return *this;
 }
 
-Polynomial::Monom operator*(const Polynomial::Monom& other, double scalar) {
-    Polynomial::Monom res = other;
-    res *= scalar;
-    return res;
+Polynomial::Monom operator*(Polynomial::Monom other, double scalar) {
+    return other *= scalar;
 }
 
 Polynomial::Monom operator*(double scalar, const Polynomial::Monom& other) {
     return other * scalar;
 }
 
-Polynomial::Monom operator*(const Polynomial::Monom& lhs, const Polynomial::Monom& rhs) {
-    Polynomial::Monom res = lhs;
-    res *= rhs;
-    return res;
+Polynomial::Monom operator*(Polynomial::Monom lhs, const Polynomial::Monom& rhs) {
+    return lhs *= rhs;
 }
 
 bool Polynomial::Monom::operator==(const Monom& rhs) const {
@@ -241,7 +237,7 @@ bool Polynomial::Monom::operator!=(const Monom& other) const {
 }
 
 std::ostream& operator<<(std::ostream& ostr, const Polynomial::Monom& m) {
-    if (m.coefficient() == 0.0) {
+    if (m.is_zero()) {
         ostr << "0";
         return ostr;
     }
@@ -323,7 +319,7 @@ Polynomial::Polynomial(const std::string& str) {
 
         std::string monom_str = s.substr(curr_pos, next_pos - curr_pos);
         if (!monom_str.empty()) {
-            polynomial_.insert(Monom(monom_str));
+            polynomial_.insert_back(Monom(monom_str));
         }
 
         curr_pos = next_pos;
@@ -385,14 +381,10 @@ Polynomial& Polynomial::operator*=(double scalar) {
         return *this;
     }
 
-    SortedList<Monom, MonomCompare> res;
-    for (const auto& monom : polynomial_) {
-        Monom curr = monom;
-        curr.set_coefficient(curr.coefficient() * scalar);
-        res.insert_back(curr);
+    for (auto& monom : polynomial_) {
+        monom *= scalar;
     }
 
-    polynomial_ = std::move(res);
     normalize();
     return *this;
 }
@@ -403,14 +395,10 @@ Polynomial& Polynomial::operator*=(const Monom& rhs) {
         return *this;
     }
 
-    SortedList<Monom, MonomCompare> res;
-    for (const auto& monom : polynomial_) {
-        Monom curr = monom;
-        curr *= rhs;
-        res.insert_back(curr);
+    for (auto& monom : polynomial_) {
+        monom *= rhs;
     }
 
-    polynomial_ = std::move(res);
     normalize();
     return *this;
 }

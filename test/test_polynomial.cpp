@@ -89,7 +89,7 @@ TEST(Polynomial, can_mul_monom_by_scalar_with_assignment) {
 
 TEST(Polynomial, can_mul_monom_by_monom_with_assignment) {
 	Polynomial::Monom m("2xy");
-	m *= {2.5, { {'x',1},{'y',1} }};
+	m *= {2.5, { {'y',1},{'x',1} }};
 	Polynomial::Monom m1("5x^2y^2");
 	EXPECT_EQ(m, m1);
 }
@@ -101,7 +101,7 @@ TEST(Polynomial, can_mul_monom_by_scalar) {
 }
 
 TEST(Polynomial, can_mul_monomials) {
-	Polynomial::Monom m1("xy");
+	Polynomial::Monom m1("yx");
 	Polynomial::Monom m2("4w^2x");
 	Polynomial::Monom m3("4yx^2w^2");
 	

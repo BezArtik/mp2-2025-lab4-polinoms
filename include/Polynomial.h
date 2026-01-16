@@ -31,8 +31,8 @@ public:
         Monom& operator*=(const Monom& other);
 
         friend Monom operator*(double scalar, const Monom& other);
-        friend Monom operator*(const Monom& other, double scalar);
-        friend Monom operator*(const Monom& lhs, const Monom& rhs);
+        friend Monom operator*(Monom other, double scalar);
+        friend Monom operator*(Monom lhs, const Monom& rhs);
 
         bool operator==(const Monom& other) const;
         bool operator!=(const Monom& other) const;
@@ -47,7 +47,7 @@ public:
 
         int total_deg() const;
         bool is_similar(const Monom& other) const;
-        bool is_zero() const noexcept { return coefficient_ == 0.0; };
+        bool is_zero() const noexcept { return std::abs(coefficient_) < std::numeric_limits<double>::epsilon(); };
     };
 
     struct MonomCompare {

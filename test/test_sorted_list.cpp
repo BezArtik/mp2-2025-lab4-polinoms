@@ -1,7 +1,6 @@
 #include <gtest.h>
 #include "SortedList.h"
 #include <vector>
-#include <random>
 
 TEST(SortedList, empty_is_empty) {
     SortedList<int> list;
