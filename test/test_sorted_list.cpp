@@ -302,3 +302,19 @@ TEST(SortedList, large_number_of_elements) {
         ++i;
     }
 }
+
+TEST(SortedList, merge_sorted_lists) {
+    SortedList<int> list1 = { 1,3,5,7,9 };
+    SortedList<int> list2 = { 0,2,4,6,8 };
+
+    list1.merge_sorted(std::move(list2));
+
+    EXPECT_EQ(list1.size(), 10);
+	EXPECT_TRUE(list2.is_empty());
+
+    int i = 0;
+    for (const auto& x : list1) {
+        EXPECT_EQ(x, i);
+        ++i;
+    }
+}

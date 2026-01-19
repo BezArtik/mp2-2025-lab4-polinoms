@@ -54,6 +54,9 @@ void Polynomial::Monom::add_variable(const Variable& var) {
 Polynomial::Monom::Monom(double coeff, const std::initializer_list<Variable>& vars)
     : coefficient_(coeff) {
     for (const auto& var : vars) {
+		if (var.power_ < 0) {
+            throw std::invalid_argument("Negative power in variable");
+        }
         add_variable(var);
     }
 }
@@ -258,35 +261,41 @@ std::ostream& operator<<(std::ostream& ostr, const Polynomial::Monom& m) {
     return ostr;
 }
 
-void Polynomial::normalize() {
+void Polynomial::combine_like_terms() {
     if (polynomial_.is_empty()) return;
 
-    SortedList<Monom, MonomCompare> norm_polynomial;
+    auto it = polynomial_.begin();
+    auto next = it;
+    ++next;
 
-    polynomial_.sort();
+    while (next != polynomial_.end()) {
+        if (it->is_similar(*next)) {
+            it->set_coefficient(it->coefficient() + next->coefficient());
+			next = polynomial_.erase(next);
 
-    auto it = polynomial_.cbegin();
-
-    Monom curr = *it;
-    ++it;
-
-    while (it != polynomial_.cend()) {
-        if (curr.is_similar(*it)) {
-            curr.set_coefficient(curr.coefficient() + it->coefficient());
+            if(it->is_zero()) {
+                it = polynomial_.erase(it);
+				if (it == polynomial_.end()) {
+                    break;
+                }
+				next = it;
+				++next;
+            }
         }
         else {
-            if (!curr.is_zero()) {
-                norm_polynomial.insert_back(curr);
-            }
-            curr = *it;
-        }
-        ++it;
-    }
-    if (!curr.is_zero()) {
-        norm_polynomial.insert_back(curr);
-    }
+            ++it;
+            ++next;
+		}
 
-    polynomial_ = std::move(norm_polynomial);
+    }
+}
+
+void Polynomial::normalize() {
+    if (polynomial_.is_empty()) return;
+	if (!polynomial_.is_sorted()) {
+        polynomial_.sort();
+    }
+	combine_like_terms();
 }
 
 Polynomial::Polynomial(const Polynomial::Monom& monom) {
@@ -301,9 +310,7 @@ Polynomial::Polynomial(const std::initializer_list<Polynomial::Monom>& init) {
             polynomial_.insert_back(monom);
         }
     }
-    if (!polynomial_.is_empty()) {
-        normalize();
-    }
+    normalize();
 }
 
 Polynomial::Polynomial(const std::string& str) {
@@ -324,15 +331,13 @@ Polynomial::Polynomial(const std::string& str) {
 
         curr_pos = next_pos;
     }
-    if (!polynomial_.is_empty()) {
-        normalize();
-    }
+    normalize();
 }
 
 Polynomial& Polynomial::operator+=(const Monom& rhs) {
     if (rhs.is_zero()) return *this;
-    polynomial_.insert_back(rhs);
-    normalize();
+    polynomial_.insert(rhs);
+	normalize();
     return *this;
 }
 
@@ -347,10 +352,10 @@ Polynomial& Polynomial::operator+=(const Polynomial& rhs) {
         return *this;
     }
 
-    for (const auto& monom : rhs.polynomial_) {
-        polynomial_.insert_back(monom);
-    }
-    normalize();
+	SortedList<Monom, MonomCompare> temp = rhs.polynomial_;
+	polynomial_.merge_sorted(std::move(temp));
+	normalize();
+
     return *this;
 }
 
@@ -361,13 +366,15 @@ Polynomial& Polynomial::operator-=(const Polynomial& rhs) {
         return *this;
     }
 
-    for (const auto& monom : rhs.polynomial_) {
-        Monom tmp = monom;
-        tmp.set_coefficient(-tmp.coefficient());
-        polynomial_.insert_back(tmp);
+	SortedList<Monom, MonomCompare> temp;
+	for (const auto& monom : rhs.polynomial_) {
+        Monom neg_monom = monom;
+        neg_monom *= -1.0;
+        temp.insert_back(neg_monom);
     }
+	polynomial_.merge_sorted(std::move(temp));
+	normalize();
 
-    normalize();
     return *this;
 }
 
@@ -456,10 +463,10 @@ bool Polynomial::operator==(const Polynomial& other) const {
         return false;
     }
 
-    auto it1 = polynomial_.cbegin();
-    auto it2 = other.polynomial_.cbegin();
+    auto it1 = polynomial_.begin();
+    auto it2 = other.polynomial_.begin();
 
-    while (it1 != polynomial_.cend() && it2 != other.polynomial_.cend()) {
+    while (it1 != polynomial_.end() && it2 != other.polynomial_.end()) {
         if (*it1 != *it2) {
             return false;
         }
@@ -528,7 +535,7 @@ double Polynomial::calculate(const SortedList<VariableValue, VariableValueCompar
             VariableValue key{ var.name_, 0.0 };
             auto it = values.find(key);
 
-            if (it != values.cend()) {
+            if (it != values.end()) {
                 term_value *= std::pow(it->value_, var.power_);
             }
             else {

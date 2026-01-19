@@ -56,6 +56,7 @@ public:
 
 private:
     SortedList<Monom, MonomCompare> polynomial_;
+    void combine_like_terms();
     void normalize();
 
 public:

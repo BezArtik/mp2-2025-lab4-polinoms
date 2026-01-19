@@ -93,6 +93,8 @@ public:
     Iterator erase(Iterator pos);
 
     void sort();
+    void merge_sorted(SortedList&& other);
+	bool is_sorted() const;
 
     ConstIterator begin()  const { return ConstIterator(sentinel_.next_); }
     ConstIterator end()    const { return ConstIterator(&sentinel_); }
@@ -513,4 +515,55 @@ void SortedList<T, Compare>::sort() {
     }
     sentinel_.prev_ = curr;
     curr->next_ = &sentinel_;
+}
+
+template <typename T, typename Compare>
+void SortedList<T, Compare>::merge_sorted(SortedList&& other) {
+    if (this == &other) {
+        return;
+    }
+    Node* this_curr = sentinel_.next_;
+    Node* other_curr = other.sentinel_.next_;
+    while (this_curr != &sentinel_ && other_curr != &other.sentinel_) {
+        if (comp_(other_curr->data_, this_curr->data_)) {
+            Node* next_other = other_curr->next_;
+            other_curr->prev_ = this_curr->prev_;
+            other_curr->next_ = this_curr;
+            this_curr->prev_->next_ = other_curr;
+            this_curr->prev_ = other_curr;
+            other_curr = next_other;
+            ++size_;
+            --other.size_;
+        }
+        else {
+            this_curr = this_curr->next_;
+        }
+    }
+    while (other_curr != &other.sentinel_) {
+        Node* next_other = other_curr->next_;
+        other_curr->prev_ = sentinel_.prev_;
+        other_curr->next_ = &sentinel_;
+        sentinel_.prev_->next_ = other_curr;
+        sentinel_.prev_ = other_curr;
+        other_curr = next_other;
+        ++size_;
+        --other.size_;
+    }
+    other.sentinel_.next_ = &other.sentinel_;
+    other.sentinel_.prev_ = &other.sentinel_;
+}   
+
+template <typename T, typename Compare>
+bool SortedList<T, Compare>::is_sorted() const {
+    if (size_ <= 1) {
+        return true;
+    }
+    Node* curr = sentinel_.next_;
+    while (curr->next_ != &sentinel_) {
+        if (comp_(curr->next_->data_, curr->data_)) {
+            return false;
+        }
+        curr = curr->next_;
+    }
+    return true;
 }
