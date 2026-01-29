@@ -32,10 +32,10 @@ public:
 
         T& operator*();
         T* operator->();
-        Iterator& operator++();
-        Iterator operator++(int);
-        Iterator& operator--();
-        Iterator operator--(int);
+        Iterator& operator++() noexcept;
+        Iterator operator++(int) noexcept;
+        Iterator& operator--() noexcept;
+        Iterator operator--(int) noexcept;
 
         bool operator==(const Iterator& other) const noexcept { return curr_ == other.curr_; }
         bool operator!=(const Iterator& other) const noexcept { return curr_ != other.curr_; }
@@ -51,10 +51,10 @@ public:
 
         const T& operator*() const;
         const T* operator->() const;
-        ConstIterator& operator++();
-        ConstIterator operator++(int);
-        ConstIterator& operator--();
-        ConstIterator operator--(int);
+        ConstIterator& operator++() noexcept;
+        ConstIterator operator++(int) noexcept;
+        ConstIterator& operator--() noexcept;
+        ConstIterator operator--(int) noexcept;
 
         bool operator==(const ConstIterator& other) const noexcept { return curr_ == other.curr_; }
         bool operator!=(const ConstIterator& other) const noexcept { return curr_ != other.curr_; }
@@ -87,25 +87,25 @@ public:
     void insert(Iter first, Iter last);
     void insert_back(const T& data);
 
-    Iterator find(const T& key);
-    ConstIterator find(const T& key) const;
+    Iterator find(const T& key) noexcept;
+    ConstIterator find(const T& key) const noexcept;
 
-    Iterator erase(Iterator pos);
+    Iterator erase(Iterator pos) noexcept;
 
-    void sort();
-    void merge_sorted(SortedList&& other);
-	bool is_sorted() const;
+    void sort() noexcept;
+    void merge_sorted(SortedList&& other) noexcept;
+    bool is_sorted() const noexcept;
 
-    ConstIterator begin()  const { return ConstIterator(sentinel_.next_); }
-    ConstIterator end()    const { return ConstIterator(&sentinel_); }
-    ConstIterator cbegin() const { return begin(); }
-    ConstIterator cend()   const { return end(); }
-    Iterator      begin()        { return Iterator(sentinel_.next_); }
-    Iterator      end()          { return Iterator(&sentinel_); }
+    ConstIterator begin()  const noexcept { return ConstIterator(sentinel_.next_); }
+    ConstIterator end()    const noexcept { return ConstIterator(&sentinel_); }
+    ConstIterator cbegin() const noexcept { return begin(); }
+    ConstIterator cend()   const noexcept { return end(); }
+    Iterator      begin()        noexcept { return Iterator(sentinel_.next_); }
+    Iterator      end()          noexcept { return Iterator(&sentinel_); }
 
 private:
 
-	Node* merge_sort(Node* head);
+	Node* merge_sort(Node* head) noexcept;
 
 };
 
@@ -131,14 +131,14 @@ T* SortedList<T, Compare>::Iterator::operator->() {
 
 template <typename T, typename Compare>
 typename SortedList<T, Compare>::Iterator&
-SortedList<T, Compare>::Iterator::operator++() {
+SortedList<T, Compare>::Iterator::operator++() noexcept {
     curr_ = curr_->next_;
     return *this;
 }
 
 template <typename T, typename Compare>
 typename SortedList<T, Compare>::Iterator
-SortedList<T, Compare>::Iterator::operator++(int) {
+SortedList<T, Compare>::Iterator::operator++(int) noexcept {
     Iterator t = *this;
     ++(*this);
     return t;
@@ -146,14 +146,14 @@ SortedList<T, Compare>::Iterator::operator++(int) {
 
 template <typename T, typename Compare>
 typename SortedList<T, Compare>::Iterator&
-SortedList<T, Compare>::Iterator::operator--() {
+SortedList<T, Compare>::Iterator::operator--() noexcept {
     curr_ = curr_->prev_;
     return *this;
 }
 
 template <typename T, typename Compare>
 typename SortedList<T, Compare>::Iterator
-SortedList<T, Compare>::Iterator::operator--(int) {
+SortedList<T, Compare>::Iterator::operator--(int) noexcept {
     Iterator t = *this;
     --(*this);
     return t;
@@ -181,14 +181,14 @@ const T* SortedList<T, Compare>::ConstIterator::operator->() const {
 
 template <typename T, typename Compare>
 typename SortedList<T, Compare>::ConstIterator&
-SortedList<T, Compare>::ConstIterator::operator++() {
+SortedList<T, Compare>::ConstIterator::operator++() noexcept {
     curr_ = curr_->next_;
     return *this;
 }
 
 template <typename T, typename Compare>
 typename SortedList<T, Compare>::ConstIterator
-SortedList<T, Compare>::ConstIterator::operator++(int) {
+SortedList<T, Compare>::ConstIterator::operator++(int) noexcept {
     ConstIterator t = *this;
     ++(*this);
     return t;
@@ -196,14 +196,14 @@ SortedList<T, Compare>::ConstIterator::operator++(int) {
 
 template <typename T, typename Compare>
 typename SortedList<T, Compare>::ConstIterator&
-SortedList<T, Compare>::ConstIterator::operator--() {
+SortedList<T, Compare>::ConstIterator::operator--() noexcept {
     curr_ = curr_->prev_;
     return *this;
 }
 
 template <typename T, typename Compare>
 typename SortedList<T, Compare>::ConstIterator
-SortedList<T, Compare>::ConstIterator::operator--(int) {
+SortedList<T, Compare>::ConstIterator::operator--(int) noexcept {
     ConstIterator t = *this;
     --(*this);
     return t;
@@ -413,7 +413,7 @@ void SortedList<T,Compare>::insert(Iter first, Iter last) {
 
 template<typename T, typename Compare>
 typename SortedList<T, Compare>::Iterator
-SortedList<T, Compare>::find(const T& key) {
+SortedList<T, Compare>::find(const T& key) noexcept {
     for (auto it = begin(); it != end(); ++it) {
         if (!comp_(*it, key) && !comp_(key, *it)) {
             return it;
@@ -424,7 +424,7 @@ SortedList<T, Compare>::find(const T& key) {
 
 template<typename T, typename Compare>
 typename SortedList<T, Compare>::ConstIterator
-SortedList<T, Compare>::find(const T& key) const {
+SortedList<T, Compare>::find(const T& key) const noexcept {
     for (auto it = cbegin(); it != cend(); ++it) {
         if (!comp_(*it, key) && !comp_(key, *it)) {
             return it;
@@ -435,7 +435,7 @@ SortedList<T, Compare>::find(const T& key) const {
 
 template <typename T, typename Compare>
 typename SortedList<T, Compare>::Iterator
-SortedList<T, Compare>::erase(Iterator pos) {
+SortedList<T, Compare>::erase(Iterator pos) noexcept {
     if (pos.curr_ == &sentinel_) {
         return end();
     }
@@ -455,7 +455,7 @@ SortedList<T, Compare>::erase(Iterator pos) {
 
 template <typename T, typename Compare>
 typename SortedList<T, Compare>::Node* 
-SortedList<T,Compare>::merge_sort(typename SortedList<T, Compare>::Node* head) {
+SortedList<T,Compare>::merge_sort(typename SortedList<T, Compare>::Node* head) noexcept {
     if (!head || head->next_ == &sentinel_) {
         return head;
     }
@@ -501,7 +501,7 @@ SortedList<T,Compare>::merge_sort(typename SortedList<T, Compare>::Node* head) {
 
 
 template <typename T, typename Compare>
-void SortedList<T, Compare>::sort() {
+void SortedList<T, Compare>::sort() noexcept {
     if (size_ <= 1) {
         return;
     }
@@ -518,7 +518,7 @@ void SortedList<T, Compare>::sort() {
 }
 
 template <typename T, typename Compare>
-void SortedList<T, Compare>::merge_sorted(SortedList&& other) {
+void SortedList<T, Compare>::merge_sorted(SortedList&& other) noexcept {
     if (this == &other) {
         return;
     }
@@ -554,7 +554,7 @@ void SortedList<T, Compare>::merge_sorted(SortedList&& other) {
 }   
 
 template <typename T, typename Compare>
-bool SortedList<T, Compare>::is_sorted() const {
+bool SortedList<T, Compare>::is_sorted() const noexcept {
     if (size_ <= 1) {
         return true;
     }

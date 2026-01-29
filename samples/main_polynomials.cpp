@@ -2,6 +2,7 @@
 #include "Polynomial.h"
 #include <iostream>
 #include <string>
+#include <exception>
 
 double calculate_interactive(const Polynomial& poly) {
 	SortedList<char> variables = poly.get_variables();

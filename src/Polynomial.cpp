@@ -5,6 +5,7 @@
 #include <cctype>
 #include <cmath>
 #include <initializer_list>
+#include <memory>
 
 bool Polynomial::MonomCompare::operator()(const Monom& m1, const Monom& m2) const noexcept {
     int m1_deg = m1.total_deg();
@@ -95,9 +96,6 @@ Polynomial::Monom::Monom(const std::string& str)
         coefficient_ = std::stod(s.substr(start, i - start));
         has_explicit_coefficient = true;
     }
-    else {
-        coefficient_ = 1.0;
-    }
 
     if (negative) {
         coefficient_ = -coefficient_;
@@ -142,7 +140,7 @@ Polynomial::Monom::Monom(const std::string& str)
     }
 }
 
-int Polynomial::Monom::total_deg() const {
+int Polynomial::Monom::total_deg() const noexcept {
     int deg = 0;
     for (const auto& var : variables_) {
         deg += var.power_;
@@ -150,7 +148,7 @@ int Polynomial::Monom::total_deg() const {
     return deg;
 }
 
-bool Polynomial::Monom::is_similar(const Monom& other) const {
+bool Polynomial::Monom::is_similar(const Monom& other) const noexcept {
     if (variables_.size() != other.variables_.size()) {
         return false;
     }
@@ -168,7 +166,7 @@ bool Polynomial::Monom::is_similar(const Monom& other) const {
     return true;
 }
 
-Polynomial::Monom& Polynomial::Monom::operator*=(double scalar) {
+Polynomial::Monom& Polynomial::Monom::operator*=(double scalar) noexcept {
     coefficient_ *= scalar;
     return *this;
 }
@@ -228,14 +226,14 @@ Polynomial::Monom operator*(Polynomial::Monom lhs, const Polynomial::Monom& rhs)
     return lhs *= rhs;
 }
 
-bool Polynomial::Monom::operator==(const Monom& rhs) const {
+bool Polynomial::Monom::operator==(const Monom& rhs) const noexcept {
     if (std::abs(coefficient_ - rhs.coefficient_) > std::numeric_limits<double>::epsilon()) {
         return false;
     }
     return is_similar(rhs);
 }
 
-bool Polynomial::Monom::operator!=(const Monom& other) const {
+bool Polynomial::Monom::operator!=(const Monom& other) const noexcept {
     return !(*this == other);
 }
 
@@ -261,7 +259,7 @@ std::ostream& operator<<(std::ostream& ostr, const Polynomial::Monom& m) {
     return ostr;
 }
 
-void Polynomial::combine_like_terms() {
+void Polynomial::combine_like_terms() noexcept {
     if (polynomial_.is_empty()) return;
 
     auto it = polynomial_.begin();
@@ -290,7 +288,7 @@ void Polynomial::combine_like_terms() {
     }
 }
 
-void Polynomial::normalize() {
+void Polynomial::normalize() noexcept {
     if (polynomial_.is_empty()) return;
 	if (!polynomial_.is_sorted()) {
         polynomial_.sort();
@@ -378,7 +376,7 @@ Polynomial& Polynomial::operator-=(const Polynomial& rhs) {
     return *this;
 }
 
-Polynomial& Polynomial::operator*=(double scalar) {
+Polynomial& Polynomial::operator*=(double scalar) noexcept {
     if (std::abs(scalar) < std::numeric_limits<double>::epsilon()) {
         polynomial_.clear();
         return *this;
@@ -396,7 +394,7 @@ Polynomial& Polynomial::operator*=(double scalar) {
     return *this;
 }
 
-Polynomial& Polynomial::operator*=(const Monom& rhs) {
+Polynomial& Polynomial::operator*=(const Monom& rhs) noexcept {
     if (rhs.is_zero()) {
         polynomial_.clear();
         return *this;
@@ -438,11 +436,11 @@ Polynomial operator-(Polynomial lhs, const Polynomial& rhs) {
     return lhs -= rhs;
 }
 
-Polynomial operator*(Polynomial lhs, double scalar) {
+Polynomial operator*(Polynomial lhs, double scalar) noexcept {
     return lhs *= scalar;
 }
 
-Polynomial operator*(double scalar, const Polynomial& rhs) {
+Polynomial operator*(double scalar, const Polynomial& rhs) noexcept {
     return rhs * scalar;
 }
 
@@ -458,7 +456,7 @@ Polynomial operator*(Polynomial lhs, const Polynomial& rhs) {
     return lhs *= rhs;
 }
 
-bool Polynomial::operator==(const Polynomial& other) const {
+bool Polynomial::operator==(const Polynomial& other) const noexcept {
     if (term_count() != other.term_count()) {
         return false;
     }
@@ -477,7 +475,7 @@ bool Polynomial::operator==(const Polynomial& other) const {
     return true;
 }
 
-bool Polynomial::operator!=(const Polynomial& other) const {
+bool Polynomial::operator!=(const Polynomial& other) const noexcept {
     return !(*this == other);
 }
 
@@ -508,7 +506,7 @@ std::ostream& operator<<(std::ostream& ostr, const Polynomial& p) {
     return ostr;
 }
 
-int Polynomial::deg() const {
+int Polynomial::deg() const noexcept {
     if (polynomial_.is_empty()) return 0;
     return polynomial_.front().total_deg();
 }
@@ -523,7 +521,7 @@ SortedList<char> Polynomial::get_variables() const {
     return res;
 }
 
-double Polynomial::calculate(const SortedList<VariableValue, VariableValueCompare>& values) const {
+double Polynomial::calculate(const SortedList<VariableValue, VariableValueCompare>& values) const noexcept {
     if (is_zero()) return 0.0;
 
     double result = 0.0;
