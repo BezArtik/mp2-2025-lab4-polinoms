@@ -167,16 +167,28 @@ bool Polynomial::Monom::is_similar(const Monom& other) const noexcept {
 }
 
 Polynomial::Monom& Polynomial::Monom::operator*=(double scalar) noexcept {
+    if (std::abs(scalar) < std::numeric_limits<double>::epsilon()) {
+        variables_.clear();
+        return *this;
+    }
+
+    if (std::abs(scalar - 1.0) < std::numeric_limits<double>::epsilon()) {
+        return *this;
+    }
     coefficient_ *= scalar;
     return *this;
 }
 
 Polynomial::Monom& Polynomial::Monom::operator*=(const Monom& other) {
-    coefficient_ *= other.coefficient();
-
+    if (std::abs(other.coefficient()) < std::numeric_limits<double>::epsilon()) {
+        variables_.clear();
+        return *this;
+    }
     if (variables_.is_empty() && other.variables_.is_empty()) {
         return *this;
     }
+
+    coefficient_ *= other.coefficient();
 
     SortedList<Variable, VariableCompare> res;
     auto iter1 = variables_.cbegin();
